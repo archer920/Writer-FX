@@ -7,6 +7,7 @@ import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
 import javafx.stage.Stage
 import java.io.BufferedWriter
 import java.io.File
@@ -87,6 +88,8 @@ class WriterFX : Application(), Observer {
 
 
         val pane = BorderPane()
+        val hBox = HBox()
+
         pane.top = title
         pane.center = tabs
 
@@ -94,7 +97,12 @@ class WriterFX : Application(), Observer {
         save.onAction = EventHandler {
             save()
         }
-        pane.bottom = save
+        val export = Button("Export")
+        export.onAction = EventHandler {
+            export()
+        }
+        hBox.children.addAll(save, export)
+        pane.bottom = hBox
 
         val scene = Scene(pane, 600.toDouble(), 800.toDouble())
         primaryStage.scene = scene
@@ -115,13 +123,34 @@ class WriterFX : Application(), Observer {
 
 
     private fun save() {
-        val path = System.getProperty("user.home") + "/articles/fx/backup/${toDocument().title}.${System.currentTimeMillis()}.json"
-        BufferedWriter(FileWriter(File(path))).use {
+        val file = File(System.getProperty("user.home") + "/articles/fx/backup/${toDocument().title}.${System.currentTimeMillis()}.json")
+        if(!file.exists()){
+            file.createNewFile()
+        }
+
+        BufferedWriter(FileWriter(file)).use {
             it.write(toJSON())
         }
     }
 
     override fun update(o: Observable?, arg: Any?) {
         save()
+    }
+
+    fun export(){
+        val file = File(System.getProperty("user.home") + "/articles/${toDocument().title.replace(" ", "_")}.txt")
+        if(!file.exists()){
+            file.createNewFile()
+        }
+        BufferedWriter(FileWriter(file)).use {
+            it.write(BuyingGuidExporter(toDocument()).process())
+        }
+        println(file.path)
+        val p = Runtime.getRuntime().exec("open ${file.path}")
+        with(p){
+            waitFor()
+            println("Exit code is ${p.exitValue()}")
+        }
+        println("Done")
     }
 }
