@@ -9,6 +9,7 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.text.Text
+import java.util.*
 
 interface Nodeable {
     fun asNode() : Node
@@ -25,26 +26,39 @@ private object Colors {
     const val GREEN = "-fx-text-inner-color: green"
 }
 
-class ArticleEntryWidget(override val requiredWords : Int, startText : String = "", lines : Int = 5) : TextArea(startText), MeasuredArticleNode{
-    override fun asNode(): Node = this
+class ArticleEntryWidget(override val requiredWords : Int, observer: Observer, startText : String = "", lines : Int = 5) : Observable(), MeasuredArticleNode {
+    val textArea = TextArea(startText)
+    private var lastWordCount : Int = 0
 
     init {
-        this.wrapTextProperty().value = true
-        this.onKeyTyped = EventHandler<KeyEvent> {
+        textArea.wrapTextProperty().value = true
+        textArea.onKeyTyped = EventHandler<KeyEvent> {
             checkProgress()
         }
-        this.prefRowCount = lines
+        textArea.prefRowCount = lines
+        addObserver(observer)
     }
 
     override var articleText: String
-        get() = textProperty().value
+        get() = textArea.textProperty().value
         set(value) {
-            textProperty().value = value
+            textArea.textProperty().value = value
         }
 
+    override fun asNode(): Node = textArea
+
     fun checkProgress() {
-        style = when {
-            wordCount >= requiredWords -> Colors.GREEN
+        if(wordCount - 5 > lastWordCount){
+            lastWordCount = wordCount
+            setChanged()
+            notifyObservers()
+        }
+        textArea.style = when {
+            wordCount >= requiredWords -> {
+                setChanged()
+                notifyObservers()
+                Colors.GREEN
+            }
             else -> Colors.BLACK
         }
     }
@@ -56,14 +70,14 @@ open class MeasuredArticleEntryWidget(private val articleEntryWidget: ArticleEnt
     private val progressLabel = Text("0%")
 
     init {
-        articleEntryWidget.onKeyTyped = EventHandler<KeyEvent> {
+        articleEntryWidget.textArea.onKeyTyped = EventHandler<KeyEvent> {
             update()
         }
 
         val hBox = HBox()
         hBox.children.addAll(progressLabel, progressBar)
 
-        center = articleEntryWidget
+        center = articleEntryWidget.asNode()
         bottom = hBox
     }
 
@@ -101,12 +115,12 @@ class TitleArticleEntryWidget(private val articleEntryWidget: ArticleEntryWidget
     private val titleEntry : TextField = TextField(title)
 
     init {
-        articleEntryWidget.onKeyTyped = EventHandler<KeyEvent> {
+        articleEntryWidget.textArea.onKeyTyped = EventHandler<KeyEvent> {
             articleEntryWidget.checkProgress()
             checkProgress()
         }
         top = titleEntry
-        center = articleEntryWidget
+        center = articleEntryWidget.asNode()
         titleEntry.editableProperty().value = !readOnlyTitle
     }
 
@@ -133,7 +147,7 @@ class TitledMeasuredArticleEntryWidget(articleEntryWidget: ArticleEntryWidget, t
 
     init {
         titleEntry.editableProperty().value = !readOnlyTitle
-        articleEntryWidget.onKeyTyped = EventHandler<KeyEvent> {
+        articleEntryWidget.textArea.onKeyTyped = EventHandler<KeyEvent> {
             update()
         }
         top = titleEntry
@@ -156,8 +170,8 @@ class TitledMeasuredArticleEntryWidget(articleEntryWidget: ArticleEntryWidget, t
     override fun asNode(): Node = this
 }
 
-fun buildStandardTitledMeasuredEntryWidget(requiredWords: Int, title : String = "", readOnlyTitle: Boolean = false, lines: Int = 5): TitledMeasuredArticleEntryWidget
-        = TitledMeasuredArticleEntryWidget(ArticleEntryWidget(requiredWords, lines = lines), title, readOnlyTitle)
+fun buildStandardTitledMeasuredEntryWidget(requiredWords: Int, observer: Observer, title : String = "", readOnlyTitle: Boolean = false, lines: Int = 5): TitledMeasuredArticleEntryWidget
+        = TitledMeasuredArticleEntryWidget(ArticleEntryWidget(requiredWords, observer, lines = lines), title, readOnlyTitle)
 
-fun buildStandardTitledWidget(requiredWords: Int, title : String, readOnlyTitle: Boolean = false, lines: Int = 5) =
-        TitleArticleEntryWidget(ArticleEntryWidget(requiredWords, lines = lines), title, readOnlyTitle)
+fun buildStandardTitledWidget(requiredWords: Int, title : String, observer: Observer, readOnlyTitle: Boolean = false, lines: Int = 5) =
+        TitleArticleEntryWidget(ArticleEntryWidget(requiredWords, observer, lines = lines), title, readOnlyTitle)
