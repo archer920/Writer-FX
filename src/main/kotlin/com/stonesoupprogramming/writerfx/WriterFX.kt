@@ -8,11 +8,11 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
+import javafx.stage.FileChooser
 import javafx.stage.Stage
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
+import java.io.*
 import java.util.*
+import java.util.stream.Collectors
 
 fun main(args: Array<String>){
     Application.launch(WriterFX::class.java, *args)
@@ -42,6 +42,14 @@ private fun buildTab(title: String, nodes: List<TitledPane>) : Tab {
     accordion.panes.addAll(nodes)
     tab.content = accordion
     return tab
+
+}
+
+fun File.readJson() : Document {
+    BufferedReader(FileReader(this)).use{
+        val json = it.lines().collect(Collectors.joining())
+        return GsonBuilder().setPrettyPrinting().create().fromJson(json, Document::class.java)
+    }
 }
 
 class WriterFX : Application(), Observer {
@@ -79,6 +87,7 @@ class WriterFX : Application(), Observer {
         primaryStage.title = "Article Writer FX"
 
         val tabs = TabPane()
+        tabs.tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
         tabs.tabs.add(buildTab("Introduction", intro))
         tabs.tabs.add(buildTab("Products", products))
         tabs.tabs.add(buildTab("Conclusion", conclusion))
@@ -93,6 +102,11 @@ class WriterFX : Application(), Observer {
         pane.top = title
         pane.center = tabs
 
+        val open = Button("Open")
+        open.onAction = EventHandler {
+            open(primaryStage)
+        }
+
         val save = Button("Save")
         save.onAction = EventHandler {
             save()
@@ -101,7 +115,7 @@ class WriterFX : Application(), Observer {
         export.onAction = EventHandler {
             export()
         }
-        hBox.children.addAll(save, export)
+        hBox.children.addAll(open, save, export)
         pane.bottom = hBox
 
         val scene = Scene(pane, 600.toDouble(), 800.toDouble())
@@ -146,11 +160,38 @@ class WriterFX : Application(), Observer {
             it.write(BuyingGuidExporter(toDocument()).process())
         }
         println(file.path)
-        val p = Runtime.getRuntime().exec("open ${file.path}")
+        val p = Runtime.getRuntime().exec("open -r ${file.path}")
         with(p){
             waitFor()
             println("Exit code is ${p.exitValue()}")
         }
         println("Done")
+    }
+
+    private fun open(primaryStage: Stage) {
+        with(FileChooser()){
+            title = "Open File"
+            val file : File? = showOpenDialog(primaryStage)
+            if(file != null){
+                val document = file.readJson()
+                title = document.title
+                intro.fromDocument(document.introduction)
+                for(i in 0 until products.size){
+                    products[i].fromReviewedProduct(document.reviewedProducts[i])
+                }
+                conclusion.fromDocument(document.conclusion)
+                for(i in 0 until criteria.size){
+                    criteria[i].fromCriteria(document.criteria[i])
+                }
+                for(i in 0 until faq.size){
+                    faq[i].fromFaq(document.faq[i])
+                }
+                sources.fromSources(document.sources)
+            }
+        }
+    }
+
+    private fun readFile(file: File) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

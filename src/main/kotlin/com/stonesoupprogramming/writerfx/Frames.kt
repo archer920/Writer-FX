@@ -9,6 +9,9 @@ import java.util.*
 class SingleEntryFrame(private val widget: MeasuredArticleNode) : Pane(widget.asNode()) {
 
     fun toArticleString() = widget.articleText
+    fun fromDocument(introduction: String) {
+        widget.articleText = introduction
+    }
 }
 
 class TitledEntryFrame(title: String, private val widget: TitledMeasuredArticleNode) : TitledPane() {
@@ -20,6 +23,15 @@ class TitledEntryFrame(title: String, private val widget: TitledMeasuredArticleN
     fun toCriteria() = Criteria(widget.articleTitle, widget.articleText)
 
     fun toFaq() = Faq(widget.articleTitle, widget.articleText)
+    fun fromCriteria(criteria: Criteria) {
+        widget.articleTitle = criteria.title
+        widget.articleText = criteria.text
+    }
+
+    fun fromFaq(faq: Faq) {
+        widget.articleTitle = faq.question
+        widget.articleText = faq.answer
+    }
 }
 
 class ProductFrame(
@@ -61,6 +73,22 @@ class ProductFrame(
                     costAndValue.articleText,
                     pros.map { it.articleText },
                     cons.map { it.articleText })
+
+    fun fromReviewedProduct(reviewedProduct: ReviewedProduct) {
+        intro.articleTitle = reviewedProduct.productTitle
+        intro.articleText = reviewedProduct.introduction
+        for(i in 0 until reviewedProduct.aspects.size){
+            aspects[i].articleTitle = reviewedProduct.aspects[i].title
+            aspects[i].articleText = reviewedProduct.aspects[i].text
+        }
+        costAndValue.articleText = reviewedProduct.costAndValue
+        for(i in 0 until reviewedProduct.pros.size){
+            pros[i].articleText = reviewedProduct.pros[i]
+        }
+        for(i in 0 until reviewedProduct.cons.size){
+            cons[i].articleText = reviewedProduct.cons[i]
+        }
+    }
 }
 
 class SourcesFrame(private val sources: List<ArticleNode>) : VBox() {
@@ -69,6 +97,11 @@ class SourcesFrame(private val sources: List<ArticleNode>) : VBox() {
     }
 
     fun toSources() = sources.map { it.articleText }
+    fun fromSources(sources: List<String>) {
+        for(i in 0 until sources.size){
+            this.sources[i].articleText = sources[i]
+        }
+    }
 }
 
 fun buildStandardSingleEntryFrame(numWords: Int, observer: Observer) =
@@ -88,7 +121,7 @@ fun buildStandardProductFrame(
                               numPros: Int = 5,
                               numCons: Int = 2,
                               proConWords: Int = 10): ProductFrame {
-    val intro = buildStandardTitledMeasuredEntryWidget(introWords, observer, title)
+    val intro = buildStandardTitledMeasuredEntryWidget(introWords, observer, title, lines = 10)
     val aspects = mutableListOf<TitledMeasuredArticleEntryWidget>()
     for (i in 1..numAspects) {
         aspects.add(buildStandardTitledMeasuredEntryWidget(aspectWords, observer,"Important Aspect $i"))
