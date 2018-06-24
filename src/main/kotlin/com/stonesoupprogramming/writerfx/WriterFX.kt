@@ -160,7 +160,7 @@ class WriterFX : Application(), Observer {
             it.write(BuyingGuidExporter(toDocument()).process())
         }
         println(file.path)
-        val p = Runtime.getRuntime().exec("open -r ${file.path}")
+        val p = Runtime.getRuntime().exec("open -R ${file.path}")
         with(p){
             waitFor()
             println("Exit code is ${p.exitValue()}")
