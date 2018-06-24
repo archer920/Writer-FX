@@ -8,6 +8,8 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import java.io.*
@@ -56,9 +58,9 @@ class WriterFX : Application(), Observer {
 
 
     private val title = TitleArticleEntryWidget(ArticleEntryWidget(20, this, lines = 1), "Article Title", true )
-    private val intro = buildStandardSingleEntryFrame(200, this)
+    private val intro = buildStandardSingleEntryFrame(200, this, lines = 30)
     private var products : List<ProductFrame>
-    private val conclusion = buildStandardSingleEntryFrame( 200, this)
+    private val conclusion = buildStandardSingleEntryFrame( 200, this, lines = 30)
     private var criteria : List<TitledEntryFrame>
     private var faq : List<TitledEntryFrame>
     private val sources = buildStandardSourcesFrame(5)
@@ -94,7 +96,7 @@ class WriterFX : Application(), Observer {
         tabs.tabs.add(buildTab("Criteria", criteria))
         tabs.tabs.add(buildTab("FAQ", faq))
         tabs.tabs.add(buildTab("Sources", sources))
-
+        VBox.setVgrow(tabs, Priority.ALWAYS)
 
         val pane = BorderPane()
         val hBox = HBox()
@@ -189,9 +191,5 @@ class WriterFX : Application(), Observer {
                 sources.fromSources(document.sources)
             }
         }
-    }
-
-    private fun readFile(file: File) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

@@ -112,16 +112,20 @@ class SourceWidget(title: String) : BorderPane(), ArticleNode {
 class TitleArticleEntryWidget(private val articleEntryWidget: ArticleEntryWidget,
                               title : String = "", readOnlyTitle: Boolean = false) : BorderPane(), TitledMeasuredArticleNode, MeasuredArticleNode by articleEntryWidget {
 
-    private val titleEntry : TextField = TextField(title)
+    private val titleEntry = TextField(title)
+    private val text  = Text(title)
 
     init {
         articleEntryWidget.textArea.onKeyTyped = EventHandler<KeyEvent> {
             articleEntryWidget.checkProgress()
             checkProgress()
         }
-        top = titleEntry
+        top = if(readOnlyTitle){
+            text
+        } else {
+            titleEntry
+        }
         center = articleEntryWidget.asNode()
-        titleEntry.editableProperty().value = !readOnlyTitle
     }
 
     override var articleTitle: String
@@ -144,13 +148,18 @@ class TitleArticleEntryWidget(private val articleEntryWidget: ArticleEntryWidget
 class TitledMeasuredArticleEntryWidget(articleEntryWidget: ArticleEntryWidget, title : String = "", readOnlyTitle : Boolean = false) : MeasuredArticleEntryWidget(articleEntryWidget), TitledMeasuredArticleNode {
 
     private val titleEntry : TextField = TextField(title)
+    private val text  = Text(title)
 
     init {
         titleEntry.editableProperty().value = !readOnlyTitle
         articleEntryWidget.textArea.onKeyTyped = EventHandler<KeyEvent> {
             update()
         }
-        top = titleEntry
+        top = if(readOnlyTitle){
+            text
+        } else {
+            titleEntry
+        }
     }
 
     override var articleTitle: String

@@ -2,11 +2,11 @@ package com.stonesoupprogramming.writerfx
 
 import javafx.scene.control.ScrollPane
 import javafx.scene.control.TitledPane
-import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import java.util.*
 
-class SingleEntryFrame(private val widget: MeasuredArticleNode) : Pane(widget.asNode()) {
+class SingleEntryFrame(private val widget: MeasuredArticleNode) : VBox(widget.asNode()) {
 
     fun toArticleString() = widget.articleText
     fun fromDocument(introduction: String) {
@@ -104,8 +104,8 @@ class SourcesFrame(private val sources: List<ArticleNode>) : VBox() {
     }
 }
 
-fun buildStandardSingleEntryFrame(numWords: Int, observer: Observer) =
-        SingleEntryFrame(MeasuredArticleEntryWidget(ArticleEntryWidget(numWords, observer)))
+fun buildStandardSingleEntryFrame(numWords: Int, observer: Observer, lines : Int = 5) =
+        SingleEntryFrame(MeasuredArticleEntryWidget(ArticleEntryWidget(numWords, observer, lines = lines)))
 
 fun buildStandardTitledEntryFrame(title: String, numWords: Int, observer: Observer) =
         TitledEntryFrame(title, TitledMeasuredArticleEntryWidget(ArticleEntryWidget(numWords, observer), title))
