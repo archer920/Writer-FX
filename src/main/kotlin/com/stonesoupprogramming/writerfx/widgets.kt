@@ -22,8 +22,8 @@ interface MeasuredArticleNode : MeasuredArticleEntry, Nodeable
 interface TitledMeasuredArticleNode : TitledEntryMeasured, MeasuredArticleNode
 
 private object Colors {
-    const val BLACK = "-fx-text-inner-color: black"
-    const val GREEN = "-fx-text-inner-color: green"
+    const val BLACK = "-fx-entryText-inner-color: black"
+    const val GREEN = "-fx-entryText-inner-color: green"
 }
 
 class ArticleEntryWidget(override val requiredWords : Int, observer: Observer, startText : String = "", lines : Int = 5) : Observable(), MeasuredArticleNode {
