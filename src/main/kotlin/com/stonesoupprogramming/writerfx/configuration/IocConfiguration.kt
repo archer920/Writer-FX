@@ -5,12 +5,11 @@ import javafx.scene.Node
 import javafx.scene.control.Accordion
 import javafx.scene.control.Tab
 import javafx.scene.control.TitledPane
-import javafx.scene.layout.VBox
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 
-private object Constants {
+object Constants {
     const val DOCUMENT_TITLE = "Article Title"
 
     const val INTRODUCTION_WORDS = 200
@@ -152,36 +151,23 @@ class IocConfiguration {
 
     @Bean(name = [BeanNames.INTRODUCTION])
     fun introductionTab() =
-            buildTab(BeanNames.INTRODUCTION, introductionFrame())
+            MeasuredEntryTab(BeanNames.INTRODUCTION, introductionFrame())
 
     @Bean(name = [BeanNames.PRODUCTS])
     fun productsTab() =
-            buildAccordianTab(BeanNames.PRODUCTS, productWidgets())
+            ReviewedProductsTab(productWidgets())
 
     @Bean(name = [BeanNames.CONCLUSION])
     fun conclusionTab() =
-            buildTab(BeanNames.CONCLUSION, conclusionFrame())
+            MeasuredEntryTab(BeanNames.CONCLUSION, conclusionFrame())
 
     @Bean(name = [BeanNames.CRITERIA])
     fun criteriaTab() =
-            buildAccordianTab(BeanNames.CRITERIA, criteriaWidgets())
+            AccordionTab(BeanNames.CRITERIA, criteriaWidgets())
 
     @Bean(name = [BeanNames.FAQ])
     fun faqTab() =
-            buildAccordianTab(BeanNames.FAQ, faqWidgets())
-
-    @Bean(name = [BeanNames.SOURCES])
-    fun sourcesTab() : Tab {
-        val tab = Tab()
-        tab.text = BeanNames.SOURCES
-
-        val vBox = VBox()
-        for (i in 0 until Constants.NUM_SOURCES){
-            vBox.children.add(TitledLineEntryWidget(Constants.SOURCE_TITLE + " ${i + 1}"))
-        }
-        tab.content = vBox
-        return tab
-    }
+            AccordionTab(BeanNames.FAQ, faqWidgets())
 }
 
 
