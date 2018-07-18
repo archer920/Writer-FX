@@ -24,11 +24,15 @@ interface MeasuredTitledEntry : TitledEntry, MeasuredEntry
 
 interface ReadOnlyMeasuredTitleEntry : MeasuredEntry, ReadOnlyTitledEntry
 
-data class SimpleMeasuredEntry(override var entryText: String, override val requiredWords: Int) : MeasuredEntry
+data class SimpleEntry(override var entryText: String) : Entry
+
+data class SimpleTitledEntry(override var entryText: String, override var title: String) : TitledEntry
+
+data class SimpleMeasuredEntry(override var entryText: String, override val requiredWords : Int) : MeasuredEntry
 
 data class SimpleMeasuredTitledEntry(override var entryText: String, override val requiredWords: Int, override var title: String) : MeasuredTitledEntry
 
-data class SimpleReadOnlyMeasuredTitleEntry(override var entryText: String, override val requiredWords: Int, override val title: String) : ReadOnlyMeasuredTitleEntry
+data class SimpleReadOnlyMeasuredTitleEntry(override var entryText: String, override var requiredWords: Int, override val title: String) : ReadOnlyMeasuredTitleEntry
 
 data class SimpleReadOnlyTitledEntry(override var entryText: String, override val title: String) : ReadOnlyTitledEntry
 
@@ -44,8 +48,8 @@ data class BuyingGuide(
         val title: Entry,
         val introduction: MeasuredEntry,
         val reviewedProducts: List<ReviewedProduct>,
-        val conclusion: Entry,
-        val criteria: List<TitledEntry>,
-        val faq : List<TitledEntry>,
-        val sources : List<Entry>
+        @Transient val conclusion: Entry,
+        @Transient val criteria: List<TitledEntry>,
+        @Transient val faq : List<TitledEntry>,
+        @Transient val sources : List<Entry>
 )

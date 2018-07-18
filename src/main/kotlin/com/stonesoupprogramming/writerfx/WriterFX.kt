@@ -18,7 +18,10 @@ class WriterFX : Application() {
         primaryStage.title = "Article Writer FX"
 
         val articleWriterUI = applicationContext.getBean(ArticleWriterUI::class.java)
+        articleWriterUI.stage = primaryStage
+
         val scene = Scene(articleWriterUI, 600.toDouble(), 800.toDouble())
+
         primaryStage.scene = scene
         primaryStage.show()
     }

@@ -78,6 +78,10 @@ class TitledLineEntryWidget(val entryObservable: EntryObservable, title: String,
     protected open fun notifyObservers(){
         entryObservable.update()
     }
+
+    fun fromSimplified(title: Entry) {
+        entryText = title.entryText
+    }
 }
 
 open class MeasuredEntryWidget(val entryObservable: EntryObservable, override val requiredWords : Int, placeHolderText: String = "") : BorderPane(), MeasuredEntry {
@@ -128,6 +132,10 @@ open class MeasuredEntryWidget(val entryObservable: EntryObservable, override va
 
     open fun toSimplified(): MeasuredEntry {
         return SimpleMeasuredEntry(entryText, requiredWords)
+    }
+
+    fun fromSimplified(entry: Entry) {
+        entryText = entry.entryText
     }
 }
 

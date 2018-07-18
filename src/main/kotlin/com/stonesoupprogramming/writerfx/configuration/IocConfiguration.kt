@@ -1,5 +1,9 @@
 package com.stonesoupprogramming.writerfx.configuration
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.stonesoupprogramming.writerfx.doa.*
+import com.stonesoupprogramming.writerfx.models.*
 import com.stonesoupprogramming.writerfx.ui.*
 import javafx.scene.Node
 import javafx.scene.control.Accordion
@@ -169,6 +173,26 @@ class IocConfiguration {
     @Bean(name = [BeanNames.FAQ])
     fun faqTab(@Autowired entryObservable: EntryObservable) =
             AccordionTab(BeanNames.FAQ, faqWidgets(entryObservable))
+
+    @Bean
+    fun gson(@Autowired entryInstanceCreator: EntryInstanceCreator,
+             @Autowired measuredEntryCreator : MeasuredEntryCreator,
+             @Autowired measuredTitleEntryCreator: MeasuredTitleEntryCreator,
+             @Autowired readOnlyMeasuredTitledEntryCreator: ReadOnlyMeasuredTitledEntryCreator,
+             @Autowired titledEntryCreator: TitledEntryCreator): Gson {
+
+        return GsonBuilder()
+                .registerTypeAdapter(Entry::class.java, entryInstanceCreator)
+                .registerTypeAdapter(TitledLineEntryWidget::class.java, entryInstanceCreator)
+                .registerTypeAdapter(MeasuredEntry::class.java, measuredEntryCreator)
+                .registerTypeAdapter(MeasuredEntryWidget::class.java, measuredEntryCreator)
+                .registerTypeAdapter(MeasuredTitledEntry::class.java, measuredTitleEntryCreator)
+                .registerTypeAdapter(TitledWidget::class.java, measuredTitleEntryCreator)
+                .registerTypeAdapter(ReadOnlyMeasuredTitleEntry::class.java, readOnlyMeasuredTitledEntryCreator)
+                .registerTypeAdapter(ReadOnlyTitledWidget::class.java, readOnlyMeasuredTitledEntryCreator)
+                .registerTypeAdapter(TitledEntry::class.java, titledEntryCreator)
+                .setPrettyPrinting().create()
+    }
 }
 
 
