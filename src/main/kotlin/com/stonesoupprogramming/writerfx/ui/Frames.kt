@@ -2,6 +2,8 @@ package com.stonesoupprogramming.writerfx.ui
 
 import com.stonesoupprogramming.writerfx.configuration.BeanNames
 import com.stonesoupprogramming.writerfx.configuration.Constants
+import com.stonesoupprogramming.writerfx.models.BuyingGuide
+import com.stonesoupprogramming.writerfx.models.Entry
 import com.stonesoupprogramming.writerfx.models.ReviewedProduct
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
@@ -70,6 +72,9 @@ class AccordionTab(title: String, val panes : List<TitledAccordionPane>) : Tab(t
         accordion.panes.addAll(panes)
         content = accordion
     }
+
+    fun toMeasuredEntry() =
+            panes.map { it.titledWidget }.toList()
 }
 
 class TitledAccordionPane(
@@ -93,10 +98,10 @@ class TitledAccordionPane(
 @Component
 class SourcesTab : Tab(BeanNames.SOURCES){
 
-    val sources : List<TitledLineEntryWidget>
+    val sources : List<Entry>
         get() = _sources.toList()
 
-    private lateinit var _sources : MutableList<TitledLineEntryWidget>
+    private val _sources = mutableListOf<TitledLineEntryWidget>()
 
     init {
         val vBox = VBox()
@@ -116,12 +121,12 @@ class TabFrame(@Autowired @Qualifier(BeanNames.INTRODUCTION) val introduction: M
                @Autowired @Qualifier(BeanNames.CONCLUSION) val conclusion: MeasuredEntryTab,
                @Autowired @Qualifier(BeanNames.CRITERIA) val criteria: AccordionTab,
                @Autowired @Qualifier(BeanNames.FAQ) val faq: AccordionTab,
-               @Autowired val sources: SourcesTab) : SourcesTab() {
+               @Autowired val sources: SourcesTab) : TabPane() {
 
 
     @PostConstruct
     private fun init(){
-        tabClosingPolicy = TabClosingPolicy.UNAVAILABLE
+        tabClosingPolicy = TabPane.TabClosingPolicy.UNAVAILABLE
         tabs.addAll(introduction, products, conclusion, criteria, faq, sources)
     }
 }
@@ -136,7 +141,12 @@ class ArticleWriterUI(@Autowired @Qualifier(BeanNames.TITLE) val title: TitledLi
         center = tabFrame
     }
 
-    fun toBuyingGuide(){
-
-    }
+    fun toBuyingGuide() =
+            BuyingGuide(title,
+                    tabFrame.introduction.measuredEntryWidget,
+                    tabFrame.products.toReviewedProducts(),
+                    tabFrame.conclusion.measuredEntryWidget,
+                    tabFrame.criteria.toMeasuredEntry(),
+                    tabFrame.faq.toMeasuredEntry(),
+                    tabFrame.sources.sources)
 }
