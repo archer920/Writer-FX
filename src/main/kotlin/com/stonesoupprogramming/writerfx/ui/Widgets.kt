@@ -10,6 +10,8 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
+import org.springframework.stereotype.Component
+import java.util.*
 
 private object Colors {
     const val BLACK = "-fx-text-inner-color: black"
@@ -20,33 +22,45 @@ private object WordCount {
     const val INTERVAL = 5
 }
 
-interface EntryUpdateListener {
-    fun onEntryUpdate(oldCount : Int, newCount : Int, text : String)
+@Component
+class EntryObservable : Observable(){
+
+    fun update() {
+        setChanged()
+        notifyObservers()
+    }
 }
 
-open class EntryWidget(placeHolderText : String = "") : BorderPane(), Entry {
+open class EntryWidget(val entryObservable: EntryObservable, placeHolderText : String = "") : BorderPane(), Entry {
 
     private val text = TextArea(placeHolderText)
 
     init {
         text.wrapTextProperty().value = true
+        text.focusedProperty().addListener { _, _, newValue -> if(!newValue){ notifyObservers() } }
         center = text
     }
 
-    override var entryText: String
-        get() = text.textProperty().value
-        set(value) {
+
+     override var entryText: String
+         get() = text.textProperty().value
+         set(value) {
            text.textProperty().value = value
-        }
+         }
+
+    protected open fun notifyObservers(){
+        entryObservable.update()
+    }
 }
 
-class TitledLineEntryWidget(title: String, placeHolderText: String = "") : VBox(), ReadOnlyTitledEntry {
+class TitledLineEntryWidget(val entryObservable: EntryObservable, title: String, placeHolderText: String = "") : VBox(), ReadOnlyTitledEntry {
 
     private val text = Text(title)
     private val textField = TextField(placeHolderText)
 
     init {
         children.addAll(text, textField)
+        textField.focusedProperty().addListener { _, _, newValue -> if(!newValue){ notifyObservers() } }
     }
 
     override var entryText: String
@@ -56,25 +70,23 @@ class TitledLineEntryWidget(title: String, placeHolderText: String = "") : VBox(
         }
     override val title: String
         get() = text.text
-}
 
-class TitledEntryWidget(title: String, titlePlaceHolder: String = ""): EntryWidget(titlePlaceHolder){
+    fun toSimplified(): ReadOnlyTitledEntry {
+        return SimpleReadOnlyTitledEntry(entryText, title)
+    }
 
-    private val titleText = Text(title)
-
-    init {
-        top = titleText
+    protected open fun notifyObservers(){
+        entryObservable.update()
     }
 }
 
-open class MeasuredEntryWidget(override val requiredWords : Int, placeHolderText: String = "") : BorderPane(), MeasuredEntry {
+open class MeasuredEntryWidget(val entryObservable: EntryObservable, override val requiredWords : Int, placeHolderText: String = "") : BorderPane(), MeasuredEntry {
 
     private val text = TextArea(placeHolderText)
     private val progressLabel = Text("0%")
     private val progressBar = ProgressBar()
     protected var currentStyle : String = Colors.BLACK
 
-    val updateListeners = mutableListOf<EntryUpdateListener>()
 
     init {
 
@@ -83,19 +95,21 @@ open class MeasuredEntryWidget(override val requiredWords : Int, placeHolderText
 
         text.wrapTextProperty().value = true
         text.onKeyTyped = EventHandler { onKeyTyped() }
+        text.focusedProperty().addListener { _, _, newValue -> if(!newValue){ notifyObservers() } }
     }
 
     override var entryText: String
         get() = text.textProperty().value
         set(value) {
-            val oldCount = wordCount
             text.textProperty().value = value
-            if(wordCount - WordCount.INTERVAL > oldCount){
-                updateListeners.forEach { it.onEntryUpdate(oldCount, wordCount, value) }
-            }
         }
 
     protected open fun onKeyTyped(){
+        updateLabel()
+        notifyObservers()
+    }
+
+    private fun updateLabel(){
         currentStyle = if(wordCount >= requiredWords) {
             Colors.GREEN
         } else {
@@ -105,14 +119,27 @@ open class MeasuredEntryWidget(override val requiredWords : Int, placeHolderText
         progressBar.progress = progress
         progressLabel.text = "${(progress * 100).toInt()}%"
     }
+
+    protected open fun notifyObservers(){
+        if(wordCount % WordCount.INTERVAL == 0){
+            entryObservable.update()
+        }
+    }
+
+    open fun toSimplified(): MeasuredEntry {
+        return SimpleMeasuredEntry(entryText, requiredWords)
+    }
 }
 
-class TitledWidget(override val requiredWords : Int, titlePlaceHolder: String = "", placeHolderText: String = "") : MeasuredEntryWidget(requiredWords, placeHolderText), MeasuredTitledEntry {
+class TitledWidget(entryObservable: EntryObservable,
+                   override val requiredWords : Int, titlePlaceHolder: String = "",
+                   placeHolderText: String = "") : MeasuredEntryWidget(entryObservable, requiredWords, placeHolderText), MeasuredTitledEntry {
 
     private val titleText = TextField(titlePlaceHolder)
 
     init {
         top = titleText
+        titleText.focusedProperty().addListener { _, _, newValue -> if(!newValue){ notifyObservers() } }
     }
 
     override var title: String
@@ -125,11 +152,16 @@ class TitledWidget(override val requiredWords : Int, titlePlaceHolder: String = 
         super.onKeyTyped()
         titleText.style = currentStyle
     }
+
+    override fun toSimplified(): MeasuredTitledEntry {
+        return SimpleMeasuredTitledEntry(entryText, requiredWords, title)
+    }
 }
 
-class ReadOnlyTitledWidget(override val requiredWords: Int,
+class ReadOnlyTitledWidget(entryObservable: EntryObservable,
+                           override val requiredWords: Int,
                            override val title: String,
-                           placeHolderText: String = "") : MeasuredEntryWidget(requiredWords, placeHolderText), ReadOnlyMeasuredTitleEntry {
+                           placeHolderText: String = "") : MeasuredEntryWidget(entryObservable, requiredWords, placeHolderText), ReadOnlyMeasuredTitleEntry {
 
     private val titleText = Text(title)
 
@@ -145,5 +177,9 @@ class ReadOnlyTitledWidget(override val requiredWords: Int,
             Color.BLACK
         }
         titleText.fill = fill
+    }
+
+    override fun toSimplified(): ReadOnlyMeasuredTitleEntry {
+        return SimpleReadOnlyMeasuredTitleEntry(entryText, requiredWords, title)
     }
 }

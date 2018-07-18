@@ -5,6 +5,7 @@ import javafx.scene.Node
 import javafx.scene.control.Accordion
 import javafx.scene.control.Tab
 import javafx.scene.control.TitledPane
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -69,75 +70,75 @@ private fun buildAccordianTab(title : String, content: List<TitledPane>) : Tab {
     return buildTab(title, accordion)
 }
 
-private fun longReviewWidget() = TitledWidget(Constants.PRODUCT_LONG_REVIEW_WORDS, Constants.PRODUCT_LONG_REVIEW_TITLE)
+private fun longReviewWidget(entryObservable: EntryObservable) = TitledWidget(entryObservable, Constants.PRODUCT_LONG_REVIEW_WORDS, Constants.PRODUCT_LONG_REVIEW_TITLE)
 
-private fun aspectWidgets() : List<TitledWidget> {
+private fun aspectWidgets(entryObservable: EntryObservable) : List<TitledWidget> {
     val aspects = mutableListOf<TitledWidget>()
     for (i in 0 until Constants.NUM_ASPECTS){
-        aspects.add(TitledWidget(Constants.ASPECT_WORDS, Constants.ASPECT_TITLE + " ${i + 1}"))
+        aspects.add(TitledWidget(entryObservable, Constants.ASPECT_WORDS, Constants.ASPECT_TITLE + " ${i + 1}"))
     }
     return aspects.toList()
 }
 
-private fun costValueWidget() =
-        ReadOnlyTitledWidget(Constants.COST_VALUE_WORDS, Constants.COST_VALUE_TITLE)
+private fun costValueWidget(entryObservable: EntryObservable) =
+        ReadOnlyTitledWidget(entryObservable, Constants.COST_VALUE_WORDS, Constants.COST_VALUE_TITLE)
 
 
-private fun proWidgets() : List<ReadOnlyTitledWidget> {
+private fun proWidgets(entryObservable: EntryObservable) : List<ReadOnlyTitledWidget> {
     val pros = mutableListOf<ReadOnlyTitledWidget>()
     for(i in 0 until Constants.NUM_PROS){
-        pros.add(ReadOnlyTitledWidget(Constants.PRO_CON_WORDS, Constants.PRO_TITLE + " ${i + 1}"))
+        pros.add(ReadOnlyTitledWidget(entryObservable, Constants.PRO_CON_WORDS, Constants.PRO_TITLE + " ${i + 1}"))
     }
     return pros.toList()
 }
 
-private fun conWidgets() : List<ReadOnlyTitledWidget> {
+private fun conWidgets(entryObservable: EntryObservable) : List<ReadOnlyTitledWidget> {
     val cons = mutableListOf<ReadOnlyTitledWidget>()
     for(i in 0 until Constants.NUM_CONS){
-        cons.add(ReadOnlyTitledWidget(Constants.PRO_CON_WORDS, Constants.CON_TITLE + " ${i + 1}"))
+        cons.add(ReadOnlyTitledWidget(entryObservable, Constants.PRO_CON_WORDS, Constants.CON_TITLE + " ${i + 1}"))
     }
     return cons.toList()
 }
 
-private fun introductionFrame() = MeasuredEntryWidget(Constants.INTRODUCTION_WORDS)
+private fun introductionFrame(entryObservable: EntryObservable) = MeasuredEntryWidget(entryObservable, Constants.INTRODUCTION_WORDS)
 
-private fun conclusionFrame() = MeasuredEntryWidget(Constants.CONCLUSION_WORDS)
+private fun conclusionFrame(entryObservable: EntryObservable) = MeasuredEntryWidget(entryObservable, Constants.CONCLUSION_WORDS)
 
-private fun productFrame(title : String) =
+private fun productFrame(entryObservable: EntryObservable, title : String) =
         ProductReviewFrame(title,
-                longReviewWidget(),
-                aspectWidgets(),
-                costValueWidget(),
-                proWidgets(),
-                conWidgets())
+                longReviewWidget(entryObservable),
+                aspectWidgets(entryObservable),
+                costValueWidget(entryObservable),
+                proWidgets(entryObservable),
+                conWidgets(entryObservable))
 
-private fun productWidgets() : List<ProductReviewFrame> {
+private fun productWidgets(entryObservable: EntryObservable) : List<ProductReviewFrame> {
     val products = mutableListOf<ProductReviewFrame>()
     for(i in 0 until Constants.NUM_PRODUCTS){
-        products.add(productFrame(Constants.PRODUCT_TITLE + " ${i + 1}"))
+        products.add(productFrame(entryObservable, Constants.PRODUCT_TITLE + " ${i + 1}"))
     }
     return products.toList()
 }
 
-private fun criteriaFrame(title : String) =
+private fun criteriaFrame(entryObservable: EntryObservable, title : String) =
         TitledAccordionPane(title,
-                TitledWidget(Constants.CRITERIA_WORDS, title))
+                TitledWidget(entryObservable, Constants.CRITERIA_WORDS, title))
 
-private fun criteriaWidgets() : List<TitledAccordionPane> {
+private fun criteriaWidgets(entryObservable: EntryObservable) : List<TitledAccordionPane> {
     val criteria = mutableListOf<TitledAccordionPane>()
     for(i in 0 until Constants.NUM_CRITERIA){
-        criteria.add(criteriaFrame(Constants.CRITERIA_TITLE + " ${i + 1}"))
+        criteria.add(criteriaFrame(entryObservable, Constants.CRITERIA_TITLE + " ${i + 1}"))
     }
     return criteria.toList()
 }
 
-private fun faqFrame(title: String) =
-        TitledAccordionPane(title, TitledWidget(Constants.FAQ_WORDS, title))
+private fun faqFrame(entryObservable: EntryObservable, title: String) =
+        TitledAccordionPane(title, TitledWidget(entryObservable, Constants.FAQ_WORDS, title))
 
-private fun faqWidgets() : List<TitledAccordionPane> {
+private fun faqWidgets(entryObservable: EntryObservable) : List<TitledAccordionPane> {
     val faq = mutableListOf<TitledAccordionPane>()
     for(i in 0 until Constants.NUM_FAQ){
-        faq.add(faqFrame(Constants.FAQ_TITLE + " ${i + 1}"))
+        faq.add(faqFrame(entryObservable, Constants.FAQ_TITLE + " ${i + 1}"))
     }
     return faq.toList()
 }
@@ -147,27 +148,27 @@ private fun faqWidgets() : List<TitledAccordionPane> {
 class IocConfiguration {
 
     @Bean(name = [BeanNames.TITLE])
-    fun titleFrame() = TitledLineEntryWidget(Constants.DOCUMENT_TITLE)
+    fun titleFrame(@Autowired entryObservable: EntryObservable) = TitledLineEntryWidget(entryObservable, Constants.DOCUMENT_TITLE)
 
     @Bean(name = [BeanNames.INTRODUCTION])
-    fun introductionTab() =
-            MeasuredEntryTab(BeanNames.INTRODUCTION, introductionFrame())
+    fun introductionTab(@Autowired entryObservable: EntryObservable) =
+            MeasuredEntryTab(BeanNames.INTRODUCTION, introductionFrame(entryObservable))
 
     @Bean(name = [BeanNames.PRODUCTS])
-    fun productsTab() =
-            ReviewedProductsTab(productWidgets())
+    fun productsTab(@Autowired entryObservable: EntryObservable) =
+            ReviewedProductsTab(productWidgets(entryObservable))
 
     @Bean(name = [BeanNames.CONCLUSION])
-    fun conclusionTab() =
-            MeasuredEntryTab(BeanNames.CONCLUSION, conclusionFrame())
+    fun conclusionTab(@Autowired entryObservable: EntryObservable) =
+            MeasuredEntryTab(BeanNames.CONCLUSION, conclusionFrame(entryObservable))
 
     @Bean(name = [BeanNames.CRITERIA])
-    fun criteriaTab() =
-            AccordionTab(BeanNames.CRITERIA, criteriaWidgets())
+    fun criteriaTab(@Autowired entryObservable: EntryObservable) =
+            AccordionTab(BeanNames.CRITERIA, criteriaWidgets(entryObservable))
 
     @Bean(name = [BeanNames.FAQ])
-    fun faqTab() =
-            AccordionTab(BeanNames.FAQ, faqWidgets())
+    fun faqTab(@Autowired entryObservable: EntryObservable) =
+            AccordionTab(BeanNames.FAQ, faqWidgets(entryObservable))
 }
 
 

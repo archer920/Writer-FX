@@ -24,6 +24,14 @@ interface MeasuredTitledEntry : TitledEntry, MeasuredEntry
 
 interface ReadOnlyMeasuredTitleEntry : MeasuredEntry, ReadOnlyTitledEntry
 
+data class SimpleMeasuredEntry(override var entryText: String, override val requiredWords: Int) : MeasuredEntry
+
+data class SimpleMeasuredTitledEntry(override var entryText: String, override val requiredWords: Int, override var title: String) : MeasuredTitledEntry
+
+data class SimpleReadOnlyMeasuredTitleEntry(override var entryText: String, override val requiredWords: Int, override val title: String) : ReadOnlyMeasuredTitleEntry
+
+data class SimpleReadOnlyTitledEntry(override var entryText: String, override val title: String) : ReadOnlyTitledEntry
+
 data class ReviewedProduct(
         val longReview : MeasuredTitledEntry,
         val aspects : List<MeasuredTitledEntry>,

@@ -5,12 +5,14 @@ import com.stonesoupprogramming.writerfx.configuration.Constants
 import com.stonesoupprogramming.writerfx.models.BuyingGuide
 import com.stonesoupprogramming.writerfx.models.Entry
 import com.stonesoupprogramming.writerfx.models.ReviewedProduct
+import com.stonesoupprogramming.writerfx.service.LocalBuyingGuideFileService
 import javafx.scene.control.*
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.VBox
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import java.util.*
 import javax.annotation.PostConstruct
 
 class ProductReviewFrame(
@@ -45,7 +47,7 @@ class ProductReviewFrame(
     }
 
     fun toReviewedProduct() =
-            ReviewedProduct(longReview, aspects, costAndValue, pros, cons)
+            ReviewedProduct(longReview.toSimplified(), aspects.map { it.toSimplified() }, costAndValue.toSimplified(), pros.map { it.toSimplified() }, cons.map{ it.toSimplified() })
 }
 
 class ReviewedProductsTab(private val productReviewFrames : List<ProductReviewFrame>) : Tab(BeanNames.PRODUCTS){
@@ -74,7 +76,7 @@ class AccordionTab(title: String, val panes : List<TitledAccordionPane>) : Tab(t
     }
 
     fun toMeasuredEntry() =
-            panes.map { it.titledWidget }.toList()
+            panes.map { it.titledWidget.toSimplified() }.toList()
 }
 
 class TitledAccordionPane(
@@ -96,10 +98,10 @@ class TitledAccordionPane(
 }
 
 @Component
-class SourcesTab : Tab(BeanNames.SOURCES){
+class SourcesTab(@Autowired private val entryObservable: EntryObservable) : Tab(BeanNames.SOURCES){
 
     val sources : List<Entry>
-        get() = _sources.toList()
+        get() = _sources.map { it.toSimplified() }.toList()
 
     private val _sources = mutableListOf<TitledLineEntryWidget>()
 
@@ -107,7 +109,7 @@ class SourcesTab : Tab(BeanNames.SOURCES){
         val vBox = VBox()
 
         for(i in 0 until Constants.NUM_SOURCES){
-            val entry = TitledLineEntryWidget(Constants.SOURCE_TITLE + " ${i + 1}")
+            val entry = TitledLineEntryWidget(entryObservable, Constants.SOURCE_TITLE + " ${i + 1}")
             _sources.add(entry)
             vBox.children.add(entry)
         }
@@ -133,20 +135,32 @@ class TabFrame(@Autowired @Qualifier(BeanNames.INTRODUCTION) val introduction: M
 
 @Component
 class ArticleWriterUI(@Autowired @Qualifier(BeanNames.TITLE) val title: TitledLineEntryWidget,
-                      @Autowired val tabFrame: TabFrame) : BorderPane() {
+                      @Autowired val tabFrame: TabFrame,
+                      @Autowired val localBuyingGuideFileService: LocalBuyingGuideFileService,
+                      @Autowired val entryObservable: EntryObservable) : BorderPane(), Observer {
 
     @PostConstruct
     private fun init(){
         top = title
         center = tabFrame
+
+        entryObservable.addObserver(this)
     }
 
-    fun toBuyingGuide() =
-            BuyingGuide(title,
-                    tabFrame.introduction.measuredEntryWidget,
+    override fun update(o: Observable?, arg: Any?) {
+        autoSave()
+    }
+
+    private fun toBuyingGuide() =
+            BuyingGuide(title.toSimplified(),
+                    tabFrame.introduction.measuredEntryWidget.toSimplified(),
                     tabFrame.products.toReviewedProducts(),
-                    tabFrame.conclusion.measuredEntryWidget,
+                    tabFrame.conclusion.measuredEntryWidget.toSimplified(),
                     tabFrame.criteria.toMeasuredEntry(),
                     tabFrame.faq.toMeasuredEntry(),
                     tabFrame.sources.sources)
+
+    private fun autoSave(){
+        localBuyingGuideFileService.save(toBuyingGuide())
+    }
 }
