@@ -1,6 +1,9 @@
 package com.stonesoupprogramming.writerfx.doa
 
 import com.google.gson.*
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
 import com.stonesoupprogramming.writerfx.models.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -38,6 +41,153 @@ private object Fields {
     const val ENTRY_TEXT = "entryText"
     const val REQUIRED_WORDS = "requiredWords"
     const val TITLE = "title"
+}
+
+@Component
+class EntryTypeAdapter : TypeAdapter<Entry>() {
+
+    override fun write(writer: JsonWriter, entry: Entry?) {
+        when(entry){
+            null -> writer.nullValue()
+            else -> writer.value(entry.entryText)
+        }
+    }
+
+    override fun read(reader: JsonReader): Entry? {
+        return when(reader.peek()){
+            JsonToken.NULL -> {
+                reader.nextNull()
+                return null
+            }
+            else -> {
+                SimpleEntry(reader.nextString())
+            }
+        }
+    }
+}
+
+@Component
+class MeasuredEntryAdapter : TypeAdapter<MeasuredEntry>() {
+
+    override fun write(writer: JsonWriter, measuredEntry: MeasuredEntry?) {
+        when(measuredEntry){
+            null -> writer.nullValue()
+            else -> writer.value("${measuredEntry.entryText}, ${measuredEntry.requiredWords}")
+        }
+    }
+
+    override fun read(reader: JsonReader): MeasuredEntry? {
+        return when(reader.peek()){
+            JsonToken.NULL -> {
+                reader.nextNull()
+                null
+            }
+            else -> {
+                val parts = reader.nextString().split(", ")
+                SimpleMeasuredEntry(parts[0], parts[1].toInt())
+            }
+        }
+    }
+
+}
+
+@Component
+class MeasuredTitledEntryAdapter : TypeAdapter<MeasuredTitledEntry>() {
+
+    override fun write(writer: JsonWriter, measuredTitledEntry: MeasuredTitledEntry?) {
+        when(measuredTitledEntry) {
+            null -> writer.nullValue()
+            else -> writer.value("${measuredTitledEntry.entryText}, ${measuredTitledEntry.title}, ${measuredTitledEntry.requiredWords}")
+        }
+    }
+
+    override fun read(reader: JsonReader): MeasuredTitledEntry? {
+        return when(reader.peek()){
+            JsonToken.NULL -> {
+                reader.nextNull()
+                null
+            }
+            else -> {
+                val parts = reader.nextString().split(", ")
+                SimpleMeasuredTitledEntry(entryText = parts[0], title = parts[1], requiredWords = parts[2].toInt())
+            }
+        }
+    }
+}
+
+@Component
+class ReadOnlyMeasuredTitledEntryAdapter : TypeAdapter<ReadOnlyMeasuredTitleEntry>() {
+
+    override fun write(writer: JsonWriter, readOnlyMeasuredTitleEntry: ReadOnlyMeasuredTitleEntry?) {
+        when(readOnlyMeasuredTitleEntry){
+            null -> writer.nullValue()
+            else -> writer.value("${readOnlyMeasuredTitleEntry.entryText}, ${readOnlyMeasuredTitleEntry.title}, ${readOnlyMeasuredTitleEntry.requiredWords}")
+        }
+    }
+
+    override fun read(reader: JsonReader): ReadOnlyMeasuredTitleEntry? {
+        return when(reader.peek()){
+            JsonToken.NULL -> {
+                reader.nextNull()
+                null
+            } else -> {
+                val parts = reader.nextString().split(", ")
+                SimpleReadOnlyMeasuredTitleEntry(entryText = parts[0],
+                        title = parts[1], requiredWords = parts[2].toInt())
+            }
+        }
+    }
+
+}
+
+@Component
+class TitledEntryAdapter : TypeAdapter<TitledEntry>(){
+
+    override fun write(writer: JsonWriter, titledEntry: TitledEntry?) {
+        when(titledEntry) {
+            null -> writer.nullValue()
+            else -> writer.value("${titledEntry.entryText}, ${titledEntry.title}")
+        }
+    }
+
+    override fun read(reader: JsonReader): TitledEntry? {
+        return when(reader.peek()){
+            JsonToken.NULL -> {
+                reader.nextNull()
+                null
+            }
+            else -> {
+                val parts = reader.nextString().split(", ")
+                SimpleTitledEntry(parts[0], parts[1])
+            }
+        }
+    }
+
+}
+
+@Component
+class ReadOnlyTitledEntryAdapter : TypeAdapter<ReadOnlyTitledEntry>() {
+
+    override fun write(writer: JsonWriter, readOnlyTitledEntry: ReadOnlyTitledEntry?) {
+        when(readOnlyTitledEntry) {
+            null -> writer.nullValue()
+            else -> writer.value("${readOnlyTitledEntry.entryText}, ${readOnlyTitledEntry.title}")
+        }
+    }
+
+    override fun read(reader: JsonReader): ReadOnlyTitledEntry? {
+        return when(reader.peek()){
+            JsonToken.NULL -> {
+                reader.nextNull()
+                null
+            }
+            else -> {
+                val parts = reader.nextString().split(", ")
+                return SimpleReadOnlyTitledEntry(parts[0], parts[1])
+            }
+        }
+    }
+
 }
 
 @Component

@@ -175,22 +175,23 @@ class IocConfiguration {
             AccordionTab(BeanNames.FAQ, faqWidgets(entryObservable))
 
     @Bean
-    fun gson(@Autowired entryInstanceCreator: EntryInstanceCreator,
-             @Autowired measuredEntryCreator : MeasuredEntryCreator,
-             @Autowired measuredTitleEntryCreator: MeasuredTitleEntryCreator,
-             @Autowired readOnlyMeasuredTitledEntryCreator: ReadOnlyMeasuredTitledEntryCreator,
-             @Autowired titledEntryCreator: TitledEntryCreator): Gson {
+    fun gson(@Autowired entryTypeAdapter: EntryTypeAdapter,
+             @Autowired titledEntryAdapter: TitledEntryAdapter,
+             @Autowired measuredEntryAdapter: MeasuredEntryAdapter,
+             @Autowired measuredTitledEntryAdapter: MeasuredTitledEntryAdapter,
+             @Autowired readOnlyMeasuredTitledEntryAdapter: ReadOnlyMeasuredTitledEntryAdapter,
+             @Autowired readOnlyTitledEntryAdapter: ReadOnlyTitledEntryAdapter): Gson {
 
         return GsonBuilder()
-                .registerTypeAdapter(Entry::class.java, entryInstanceCreator)
-                .registerTypeAdapter(TitledLineEntryWidget::class.java, entryInstanceCreator)
-                .registerTypeAdapter(MeasuredEntry::class.java, measuredEntryCreator)
-                .registerTypeAdapter(MeasuredEntryWidget::class.java, measuredEntryCreator)
-                .registerTypeAdapter(MeasuredTitledEntry::class.java, measuredTitleEntryCreator)
-                .registerTypeAdapter(TitledWidget::class.java, measuredTitleEntryCreator)
-                .registerTypeAdapter(ReadOnlyMeasuredTitleEntry::class.java, readOnlyMeasuredTitledEntryCreator)
-                .registerTypeAdapter(ReadOnlyTitledWidget::class.java, readOnlyMeasuredTitledEntryCreator)
-                .registerTypeAdapter(TitledEntry::class.java, titledEntryCreator)
+                .registerTypeAdapter(Entry::class.java, entryTypeAdapter)
+                .registerTypeAdapter(TitledLineEntryWidget::class.java, readOnlyTitledEntryAdapter)
+                .registerTypeAdapter(MeasuredEntry::class.java, measuredEntryAdapter)
+                .registerTypeAdapter(MeasuredEntryWidget::class.java, measuredEntryAdapter)
+                .registerTypeAdapter(MeasuredTitledEntry::class.java, measuredEntryAdapter)
+                .registerTypeAdapter(TitledWidget::class.java, measuredTitledEntryAdapter)
+                .registerTypeAdapter(ReadOnlyMeasuredTitleEntry::class.java, readOnlyMeasuredTitledEntryAdapter)
+                .registerTypeAdapter(ReadOnlyTitledWidget::class.java, readOnlyMeasuredTitledEntryAdapter)
+                .registerTypeAdapter(TitledEntry::class.java, titledEntryAdapter)
                 .setPrettyPrinting().create()
     }
 }

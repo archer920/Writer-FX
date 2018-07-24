@@ -48,8 +48,8 @@ data class BuyingGuide(
         val title: Entry,
         val introduction: MeasuredEntry,
         val reviewedProducts: List<ReviewedProduct>,
-        @Transient val conclusion: Entry,
-        @Transient val criteria: List<TitledEntry>,
-        @Transient val faq : List<TitledEntry>,
-        @Transient val sources : List<Entry>
+        val conclusion: Entry,
+        val criteria: List<TitledEntry>,
+        val faq : List<TitledEntry>,
+        val sources : List<Entry>
 )
