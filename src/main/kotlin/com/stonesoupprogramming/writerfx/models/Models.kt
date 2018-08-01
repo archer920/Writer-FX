@@ -48,8 +48,8 @@ data class BuyingGuide(
         val title: Entry,
         val introduction: MeasuredEntry,
         val reviewedProducts: List<ReviewedProduct>,
-        val conclusion: Entry,
+        val conclusion: MeasuredEntry,
         val criteria: List<TitledEntry>,
         val faq : List<TitledEntry>,
-        val sources : List<Entry>
+        val sources : List<ReadOnlyTitledEntry>
 )

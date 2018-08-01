@@ -2,10 +2,7 @@ package com.stonesoupprogramming.writerfx.ui
 
 import com.stonesoupprogramming.writerfx.configuration.BeanNames
 import com.stonesoupprogramming.writerfx.configuration.Constants
-import com.stonesoupprogramming.writerfx.models.BuyingGuide
-import com.stonesoupprogramming.writerfx.models.Entry
-import com.stonesoupprogramming.writerfx.models.ReviewedProduct
-import com.stonesoupprogramming.writerfx.models.TitledEntry
+import com.stonesoupprogramming.writerfx.models.*
 import com.stonesoupprogramming.writerfx.service.LocalBuyingGuideFileService
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -123,7 +120,7 @@ class TitledAccordionPane(
 class SourcesTab(@Autowired private val entryObservable: EntryObservable) : Tab(BeanNames.SOURCES){
 
 
-    val sources : List<Entry>
+    val sources : List<ReadOnlyTitledEntry>
         get() = _sources.map { it }.toList()
 
     private val _sources = mutableListOf<TitledLineEntryWidget>()
