@@ -21,7 +21,17 @@ interface BuyingGuideFileLoader {
     fun load(source : File) : BuyingGuide
 }
 
-interface LocalBuyingGuideFileDao : BuyingGuideFileSaver, BuyingGuideFileLoader
+interface LocalBuyingGuideFileDao : BuyingGuideFileSaver, BuyingGuideFileLoader {
+    fun writeFile(text: String, dest: File) {
+        BufferedWriter(FileWriter(dest.createIfNonExists())).use{
+            it.write(text)
+        }
+    }
+}
+
+private object Constants {
+    val DELIMETER = "{{}}"
+}
 
 @Repository
 class LocalBuyingGuideFileDaoImpl(@Autowired val gson: Gson) : LocalBuyingGuideFileDao {
@@ -72,7 +82,7 @@ class MeasuredEntryAdapter : TypeAdapter<MeasuredEntry>() {
     override fun write(writer: JsonWriter, measuredEntry: MeasuredEntry?) {
         when(measuredEntry){
             null -> writer.nullValue()
-            else -> writer.value("${measuredEntry.entryText}, ${measuredEntry.requiredWords}")
+            else -> writer.value("${measuredEntry.entryText}${Constants.DELIMETER}${measuredEntry.requiredWords}")
         }
     }
 
@@ -83,7 +93,7 @@ class MeasuredEntryAdapter : TypeAdapter<MeasuredEntry>() {
                 null
             }
             else -> {
-                val parts = reader.nextString().split(", ")
+                val parts = reader.nextString().split(Constants.DELIMETER)
                 SimpleMeasuredEntry(parts[0], parts[1].toInt())
             }
         }
@@ -97,7 +107,7 @@ class MeasuredTitledEntryAdapter : TypeAdapter<MeasuredTitledEntry>() {
     override fun write(writer: JsonWriter, measuredTitledEntry: MeasuredTitledEntry?) {
         when(measuredTitledEntry) {
             null -> writer.nullValue()
-            else -> writer.value("${measuredTitledEntry.entryText}, ${measuredTitledEntry.title}, ${measuredTitledEntry.requiredWords}")
+            else -> writer.value("${measuredTitledEntry.entryText}${Constants.DELIMETER}${measuredTitledEntry.title}${Constants.DELIMETER}${measuredTitledEntry.requiredWords}")
         }
     }
 
@@ -108,7 +118,7 @@ class MeasuredTitledEntryAdapter : TypeAdapter<MeasuredTitledEntry>() {
                 null
             }
             else -> {
-                val parts = reader.nextString().split(", ")
+                val parts = reader.nextString().split(Constants.DELIMETER)
                 SimpleMeasuredTitledEntry(entryText = parts[0], title = parts[1], requiredWords = parts[2].toInt())
             }
         }
@@ -121,7 +131,7 @@ class ReadOnlyMeasuredTitledEntryAdapter : TypeAdapter<ReadOnlyMeasuredTitleEntr
     override fun write(writer: JsonWriter, readOnlyMeasuredTitleEntry: ReadOnlyMeasuredTitleEntry?) {
         when(readOnlyMeasuredTitleEntry){
             null -> writer.nullValue()
-            else -> writer.value("${readOnlyMeasuredTitleEntry.entryText}, ${readOnlyMeasuredTitleEntry.title}, ${readOnlyMeasuredTitleEntry.requiredWords}")
+            else -> writer.value("${readOnlyMeasuredTitleEntry.entryText}${Constants.DELIMETER}${readOnlyMeasuredTitleEntry.title}${Constants.DELIMETER}${readOnlyMeasuredTitleEntry.requiredWords}")
         }
     }
 
@@ -131,7 +141,7 @@ class ReadOnlyMeasuredTitledEntryAdapter : TypeAdapter<ReadOnlyMeasuredTitleEntr
                 reader.nextNull()
                 null
             } else -> {
-                val parts = reader.nextString().split(", ")
+                val parts = reader.nextString().split(Constants.DELIMETER)
                 SimpleReadOnlyMeasuredTitleEntry(entryText = parts[0],
                         title = parts[1], requiredWords = parts[2].toInt())
             }
@@ -146,7 +156,7 @@ class TitledEntryAdapter : TypeAdapter<TitledEntry>(){
     override fun write(writer: JsonWriter, titledEntry: TitledEntry?) {
         when(titledEntry) {
             null -> writer.nullValue()
-            else -> writer.value("${titledEntry.entryText}, ${titledEntry.title}")
+            else -> writer.value("${titledEntry.entryText}${Constants.DELIMETER}${titledEntry.title}")
         }
     }
 
@@ -157,7 +167,7 @@ class TitledEntryAdapter : TypeAdapter<TitledEntry>(){
                 null
             }
             else -> {
-                val parts = reader.nextString().split(", ")
+                val parts = reader.nextString().split(Constants.DELIMETER)
                 SimpleTitledEntry(parts[0], parts[1])
             }
         }
@@ -171,7 +181,7 @@ class ReadOnlyTitledEntryAdapter : TypeAdapter<ReadOnlyTitledEntry>() {
     override fun write(writer: JsonWriter, readOnlyTitledEntry: ReadOnlyTitledEntry?) {
         when(readOnlyTitledEntry) {
             null -> writer.nullValue()
-            else -> writer.value("${readOnlyTitledEntry.entryText}, ${readOnlyTitledEntry.title}")
+            else -> writer.value("${readOnlyTitledEntry.entryText}${Constants.DELIMETER}${readOnlyTitledEntry.title}")
         }
     }
 
@@ -182,7 +192,7 @@ class ReadOnlyTitledEntryAdapter : TypeAdapter<ReadOnlyTitledEntry>() {
                 null
             }
             else -> {
-                val parts = reader.nextString().split(", ")
+                val parts = reader.nextString().split(Constants.DELIMETER)
                 return SimpleReadOnlyTitledEntry(parts[0], parts[1])
             }
         }

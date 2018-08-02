@@ -220,6 +220,7 @@ class ArticleWriterUI(@Autowired @Qualifier(BeanNames.TITLE) val title: TitledLi
 
         uiMenu.saveItem.onAction = EventHandler<ActionEvent> { save() }
         uiMenu.openItem.onAction = EventHandler<ActionEvent> { open() }
+        uiMenu.exportItem.onAction = EventHandler<ActionEvent>{ export() }
     }
 
     override fun update(o: Observable?, arg: Any?) {
@@ -256,6 +257,23 @@ class ArticleWriterUI(@Autowired @Qualifier(BeanNames.TITLE) val title: TitledLi
                 if(this != null){
                     val buyingGuide = localBuyingGuideFileService.load(this)
                     fromBuyingGuide(buyingGuide)
+                }
+            }
+        }
+    }
+
+    private fun export(){
+        if(this::stage.isInitialized){
+            with(filePicker.exportFile(stage)){
+                if(this != null){
+                    localBuyingGuideFileService.export(toBuyingGuide(), this)
+                    println(this.path)
+                    val p = Runtime.getRuntime().exec("open -R ${this.path}")
+                    with(p){
+                        waitFor()
+                        println("Exit code is ${p.exitValue()}")
+                    }
+                    println("Done")
                 }
             }
         }

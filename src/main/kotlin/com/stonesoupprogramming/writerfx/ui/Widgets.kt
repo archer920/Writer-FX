@@ -134,7 +134,7 @@ open class MeasuredEntryWidget(val entryObservable: EntryObservable, override va
         return SimpleMeasuredEntry(entryText, requiredWords)
     }
 
-    fun fromSimplified(entry: Entry) {
+    open fun fromSimplified(entry: Entry) {
         entryText = entry.entryText
     }
 }
@@ -163,6 +163,15 @@ class TitledWidget(entryObservable: EntryObservable,
 
     override fun toSimplified(): MeasuredTitledEntry {
         return SimpleMeasuredTitledEntry(entryText, requiredWords, title)
+    }
+
+    override fun fromSimplified(entry: Entry) {
+        super.fromSimplified(entry)
+        //FIXME: This is really hacky and should be refactored
+        when (entry){
+            is TitledEntry -> title = entry.title
+            else -> throw IllegalArgumentException("Missing required title field")
+        }
     }
 }
 
