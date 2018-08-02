@@ -31,28 +31,6 @@ class EntryObservable : Observable(){
     }
 }
 
-open class EntryWidget(val entryObservable: EntryObservable, placeHolderText : String = "") : BorderPane(), Entry {
-
-    private val text = TextArea(placeHolderText)
-
-    init {
-        text.wrapTextProperty().value = true
-        text.focusedProperty().addListener { _, _, newValue -> if(!newValue){ notifyObservers() } }
-        center = text
-    }
-
-
-     override var entryText: String
-         get() = text.textProperty().value
-         set(value) {
-           text.textProperty().value = value
-         }
-
-    protected open fun notifyObservers(){
-        entryObservable.update()
-    }
-}
-
 class TitledLineEntryWidget(val entryObservable: EntryObservable, title: String, placeHolderText: String = "") : VBox(), ReadOnlyTitledEntry {
 
     private val text = Text(title)
@@ -75,7 +53,7 @@ class TitledLineEntryWidget(val entryObservable: EntryObservable, title: String,
         return SimpleReadOnlyTitledEntry(entryText, title)
     }
 
-    protected open fun notifyObservers(){
+    private fun notifyObservers(){
         entryObservable.update()
     }
 
