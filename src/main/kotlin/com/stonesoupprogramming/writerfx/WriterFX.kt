@@ -1,13 +1,15 @@
 package com.stonesoupprogramming.writerfx
 
 import com.stonesoupprogramming.writerfx.configuration.IocConfiguration
-import com.stonesoupprogramming.writerfx.ui.ArticleWriterUI
+import com.stonesoupprogramming.writerfx.configuration.UiConfigurationFactory
 import javafx.application.Application
-import javafx.scene.Scene
 import javafx.stage.Stage
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
+private lateinit var applicationArguments: Array<String>
+
 fun main(args: Array<String>){
+    applicationArguments = args
     Application.launch(WriterFX::class.java, *args)
 }
 
@@ -15,14 +17,7 @@ class WriterFX : Application() {
 
     override fun start(primaryStage: Stage) {
         val applicationContext = AnnotationConfigApplicationContext(IocConfiguration::class.java)
-        primaryStage.title = "Article Writer FX"
-
-        val articleWriterUI = applicationContext.getBean(ArticleWriterUI::class.java)
-        articleWriterUI.stage = primaryStage
-
-        val scene = Scene(articleWriterUI, 600.toDouble(), 800.toDouble())
-
-        primaryStage.scene = scene
-        primaryStage.show()
+        val uiConfigurationFactory = applicationContext.getBean(UiConfigurationFactory::class.java)
+        uiConfigurationFactory.run(primaryStage, applicationArguments)
     }
 }
